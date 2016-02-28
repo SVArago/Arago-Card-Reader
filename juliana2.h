@@ -7,6 +7,8 @@
 
 #include "nfc_thread.h"
 
+#define JULIANA2_PORT 3940
+
 class Juliana2 : public QObject
 {
 	Q_OBJECT
@@ -24,7 +26,6 @@ private:
 	QWebSocketServer *server;
 	QList<QWebSocket *> clients;
 	NfcThread *nfcThread;
-	QString eventMessage;
 };
 
 #endif
