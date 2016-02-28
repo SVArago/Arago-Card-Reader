@@ -5,6 +5,8 @@
 #include <QWebSocketServer>
 #include <QWebSocket>
 
+#include "nfc_thread.h"
+
 class Juliana2 : public QObject
 {
 	Q_OBJECT
@@ -16,10 +18,13 @@ public:
 private slots:
 	void onNewConnection();
 	void onSocketDisconnected();
+	void onCardScanned(QByteArray, QByteArray, QByteArray);
 
 private:
 	QWebSocketServer *server;
 	QList<QWebSocket *> clients;
+	NfcThread *nfcThread;
+	QString eventMessage;
 };
 
 #endif

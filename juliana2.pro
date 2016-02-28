@@ -2,8 +2,8 @@ CONFIG += warn_on
 QT += websockets
 TARGET = juliana2
 
-SOURCES += juliana2.cpp
-HEADERS += juliana2.h
+SOURCES += juliana2.cpp nfc_thread.cpp
+HEADERS += juliana2.h nfc_thread.h
 
 unix {
 	QT -= gui
