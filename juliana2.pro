@@ -1,4 +1,5 @@
 CONFIG += warn_on
+QT += websockets
 TARGET = juliana2
 
 SOURCES += juliana2.cpp
