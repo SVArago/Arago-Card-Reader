@@ -11,3 +11,9 @@ unix {
 	QT -= gui
 	SOURCES += frontend_linux.cpp
 }
+
+win32 {
+	QT += gui widgets
+	HEADERS += frontend_gui.h
+	SOURCES += frontend_gui.cpp
+}
