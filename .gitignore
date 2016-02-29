@@ -1,4 +1,5 @@
 Makefile
 juliana2
+juliana2.ini
 moc_*
 *.o

@@ -1,4 +1,4 @@
-#include <QtCore>
+#include <QCoreApplication>
 #include <QTextStream>
 
 #include "juliana2.h"

@@ -2,12 +2,12 @@
 #define JULIANA2_H_
 
 #include <QObject>
+#include <QByteArray>
+#include <QList>
 #include <QWebSocketServer>
 #include <QWebSocket>
 
 #include "nfc_thread.h"
-
-#define JULIANA2_PORT 3940
 
 class Juliana2 : public QObject
 {
@@ -23,6 +23,8 @@ private slots:
 	void onCardScanned(QByteArray, QByteArray, QByteArray);
 
 private:
+	bool setupSsl(QString, QString);
+
 	QWebSocketServer *server;
 	QList<QWebSocket *> clients;
 	NfcThread *nfcThread;

@@ -1,10 +1,17 @@
-#include <QtCore>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFile>
+#include <QString>
+#include <QSettings>
+#include <QSslConfiguration>
+#include <QSslCertificate>
+#include <QSslKey>
 
 #include "juliana2.h"
 #include "frontend.h"
 
 Juliana2::Juliana2() :
-	server(new QWebSocketServer(QStringLiteral("Juliana"), QWebSocketServer::NonSecureMode, this)),
+	server(),
 	clients(),
 	nfcThread(new NfcThread())
 {
@@ -12,9 +19,21 @@ Juliana2::Juliana2() :
 
 void Juliana2::setup()
 {
-	frontend_message("Starting websocket server...");
+	// Load configuration
+	QString configurationFile = QCoreApplication::applicationDirPath() + QDir::separator() + "juliana2.ini";
+	QSettings settings(configurationFile, QSettings::IniFormat);
+	quint64 port = settings.value("websocket/port", 3000).toInt();
+	if(settings.value("websocket/tls", false).toBool() &&
+		this->setupSsl(settings.value("websocket/certificate", "").toString(), settings.value("websocket/key", "").toString())) {
+		frontend_message("Enabling TLS on server...");
+	} else {
+		server = new QWebSocketServer(QStringLiteral("Juliana"), QWebSocketServer::NonSecureMode, this);
+		frontend_message("Not enabling TLS on server...");
+	}
 
-	if(!server->listen(QHostAddress::Any, JULIANA2_PORT)) {
+	// Setup socket server
+	frontend_message(QString("Starting websocket server on port %1...").arg(port));
+	if(!server->listen(QHostAddress::Any, port)) {
 		frontend_error(QString("Failed to setup server: %1").arg(server->errorString()));
 		return;
 	}
@@ -25,6 +44,47 @@ void Juliana2::setup()
 	nfcThread->start();
 
 	frontend_message("Started Juliana2!");
+}
+
+bool Juliana2::setupSsl(QString certificatePath, QString keyPath)
+{
+	// FIXME: This function leaks both QFile objects
+
+	QFile *certificateFile = new QFile(certificatePath);
+	certificateFile->open(QIODevice::ReadOnly);
+	if(!certificateFile->exists()) {
+		frontend_error("Certificate file doesn't exist");
+		return false;
+	}
+
+	QSslCertificate cert(certificateFile);
+	certificateFile->close();
+	if(cert.isNull()) {
+		frontend_error("Invalid certificate specified");
+		return false;
+	}
+
+	QFile *keyFile = new QFile(keyPath);
+	keyFile->open(QIODevice::ReadOnly);
+	if(!keyFile->exists()) {
+		frontend_error("Key file doesn't exist");
+		return false;
+	}
+
+	QSslKey key(keyFile, QSsl::Rsa);
+	keyFile->close();
+	if(key.isNull()) {
+		frontend_error("Invalid key specified");
+		return false;
+	}
+
+	QSslConfiguration sslConfiguration = QSslConfiguration::defaultConfiguration();
+	sslConfiguration.setLocalCertificate(cert);
+	sslConfiguration.setPrivateKey(key);
+
+	server = new QWebSocketServer(QStringLiteral("Juliana"), QWebSocketServer::SecureMode, this);
+	server->setSslConfiguration(sslConfiguration);
+	return true;
 }
 
 void Juliana2::onNewConnection()
