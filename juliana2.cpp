@@ -15,7 +15,7 @@
 Juliana2::Juliana2() :
 	server(),
 	clients(),
-	nfcThread(new NfcThread())
+	nfcThread()
 {
 }
 
@@ -44,6 +44,8 @@ void Juliana2::setup()
 	connect(server, &QWebSocketServer::acceptError, this, &Juliana2::onSocketError);
 	connect(server, &QWebSocketServer::serverError, this, &Juliana2::onServerError);
 	connect(server, &QWebSocketServer::sslErrors, this, &Juliana2::onSslError);
+
+	nfcThread = new NfcThread(settings.value("nfc/device", "").toString());
 	connect(nfcThread, &NfcThread::cardScanned, this, &Juliana2::onCardScanned);
 	connect(nfcThread, &NfcThread::finished, nfcThread, &QObject::deleteLater);
 	nfcThread->start();
