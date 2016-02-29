@@ -34,9 +34,9 @@ void Juliana2::setup()
 	}
 
 	// Setup socket server
-	frontend_message(QString("Starting websocket server on port %1...").arg(port));
+	frontend_message(QStringLiteral("Starting websocket server on port %1...").arg(port));
 	if(!server->listen(QHostAddress::Any, port)) {
-		frontend_error(QString("Failed to setup server: %1").arg(server->errorString()));
+		frontend_error(QStringLiteral("Failed to setup server: %1").arg(server->errorString()));
 		return;
 	}
 
@@ -100,7 +100,7 @@ void Juliana2::onNewConnection()
 	connect(webSocket, static_cast<void(QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error), this, &Juliana2::onSocketError);
 	connect(webSocket, &QWebSocket::sslErrors, this, &Juliana2::onSslError);
 	clients.append(webSocket);
-	frontend_message(QString("Client connected from %1:%2, now %3 connected client(s)").arg(webSocket->peerAddress().toString()).arg(webSocket->peerPort()).arg(clients.length()));
+	frontend_message(QStringLiteral("Client connected from %1:%2, now %3 connected client(s)").arg(webSocket->peerAddress().toString()).arg(webSocket->peerPort()).arg(clients.length()));
 }
 
 void Juliana2::onSocketDisconnected()
@@ -109,7 +109,7 @@ void Juliana2::onSocketDisconnected()
 	if (webSocket) {
 		clients.removeAll(webSocket);
 		frontend_message(
-			QString("Client disconnected from %1:%2, now %3 connected client(s) [reason: %4]")
+			QStringLiteral("Client disconnected from %1:%2, now %3 connected client(s) [reason: %4]")
 				.arg(webSocket->peerAddress().toString())
 				.arg(webSocket->peerPort())
 				.arg(clients.length())
@@ -124,19 +124,19 @@ void Juliana2::onSocketError(QAbstractSocket::SocketError error)
 	// See http://stackoverflow.com/a/16390227
 	const QMetaObject & metaObject = QAbstractSocket::staticMetaObject;
 	QMetaEnum metaEnum = metaObject.enumerator(metaObject.indexOfEnumerator("SocketError"));
-	frontend_error(QString("Socket error: " + QString(metaEnum.valueToKey(error))));
+	frontend_error(QStringLiteral("Socket error: ") + metaEnum.valueToKey(error));
 }
 
 void Juliana2::onServerError(QWebSocketProtocol::CloseCode closeCode)
 {
-	frontend_error(QString("Server error: " + QString(closeCode)));
+	frontend_error(QStringLiteral("Server error: ") + QString(closeCode));
 }
 
 void Juliana2::onSslError(const QList<QSslError>& errors)
 {
 	foreach(QSslError error, errors)
 	{
-		frontend_error(QString("SSL error: " + error.errorString()));
+		frontend_error(QStringLiteral("SSL error: ") + error.errorString());
 	}
 }
 
@@ -146,8 +146,8 @@ void Juliana2::onCardScanned(QByteArray atqa, QByteArray sak, QByteArray uid)
 	QString sak_fmt = QString(sak.toHex());
 	QString uid_fmt = QString(uid.toHex());
 
-	frontend_message(QString("Card scanned: ATQA 0x%1, SAK 0x%2, UID 0x%3").arg(atqa_fmt, sak_fmt, uid_fmt));
-	QString message = QString("{\"atqa\": \"%1\", \"uid\": \"%2\", \"sak\": \"%3\"}").arg(atqa_fmt, sak_fmt, uid_fmt);
+	frontend_message(QStringLiteral("Card scanned: ATQA 0x%1, SAK 0x%2, UID 0x%3").arg(atqa_fmt, sak_fmt, uid_fmt));
+	QString message = QStringLiteral("{\"atqa\": \"%1\", \"uid\": \"%2\", \"sak\": \"%3\"}").arg(atqa_fmt, sak_fmt, uid_fmt);
 
 	foreach(QWebSocket* socket, clients) {
 		socket->sendTextMessage(message);
