@@ -1,6 +1,8 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QMetaObject>
+#include <QMetaEnum>
 #include <QString>
 #include <QSettings>
 #include <QSslConfiguration>
@@ -39,6 +41,9 @@ void Juliana2::setup()
 	}
 
 	connect(server, &QWebSocketServer::newConnection, this, &Juliana2::onNewConnection);
+	connect(server, &QWebSocketServer::acceptError, this, &Juliana2::onSocketError);
+	connect(server, &QWebSocketServer::serverError, this, &Juliana2::onServerError);
+	connect(server, &QWebSocketServer::sslErrors, this, &Juliana2::onSslError);
 	connect(nfcThread, &NfcThread::cardScanned, this, &Juliana2::onCardScanned);
 	connect(nfcThread, &NfcThread::finished, nfcThread, &QObject::deleteLater);
 	nfcThread->start();
@@ -92,6 +97,8 @@ void Juliana2::onNewConnection()
 	QWebSocket *webSocket = server->nextPendingConnection();
 
 	connect(webSocket, &QWebSocket::disconnected, this, &Juliana2::onSocketDisconnected);
+	connect(webSocket, static_cast<void(QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error), this, &Juliana2::onSocketError);
+	connect(webSocket, &QWebSocket::sslErrors, this, &Juliana2::onSslError);
 	clients.append(webSocket);
 	frontend_message(QString("Client connected from %1:%2, now %3 connected client(s)").arg(webSocket->peerAddress().toString()).arg(webSocket->peerPort()).arg(clients.length()));
 }
@@ -101,8 +108,35 @@ void Juliana2::onSocketDisconnected()
 	QWebSocket *webSocket = qobject_cast<QWebSocket *>(sender());
 	if (webSocket) {
 		clients.removeAll(webSocket);
-		frontend_message(QString("Client disconnected from %1:%2, now %3 connected client(s)").arg(webSocket->peerAddress().toString()).arg(webSocket->peerPort()).arg(clients.length()));
+		frontend_message(
+			QString("Client disconnected from %1:%2, now %3 connected client(s) [reason: %4]")
+				.arg(webSocket->peerAddress().toString())
+				.arg(webSocket->peerPort())
+				.arg(clients.length())
+				.arg(webSocket->closeCode())
+		);
 		webSocket->deleteLater();
+	}
+}
+
+void Juliana2::onSocketError(QAbstractSocket::SocketError error)
+{
+	// See http://stackoverflow.com/a/16390227
+	const QMetaObject & metaObject = QAbstractSocket::staticMetaObject;
+	QMetaEnum metaEnum = metaObject.enumerator(metaObject.indexOfEnumerator("SocketError"));
+	frontend_error(QString("Socket error: " + QString(metaEnum.valueToKey(error))));
+}
+
+void Juliana2::onServerError(QWebSocketProtocol::CloseCode closeCode)
+{
+	frontend_error(QString("Server error: " + QString(closeCode)));
+}
+
+void Juliana2::onSslError(const QList<QSslError>& errors)
+{
+	foreach(QSslError error, errors)
+	{
+		frontend_error(QString("SSL error: " + error.errorString()));
 	}
 }
 
@@ -115,8 +149,7 @@ void Juliana2::onCardScanned(QByteArray atqa, QByteArray sak, QByteArray uid)
 	frontend_message(QString("Card scanned: ATQA 0x%1, SAK 0x%2, UID 0x%3").arg(atqa_fmt, sak_fmt, uid_fmt));
 	QString message = QString("{\"atqa\": \"%1\", \"uid\": \"%2\", \"sak\": \"%3\"}").arg(atqa_fmt, sak_fmt, uid_fmt);
 
-	foreach(QWebSocket* socket, clients)
-	{
+	foreach(QWebSocket* socket, clients) {
 		socket->sendTextMessage(message);
 	}
 }

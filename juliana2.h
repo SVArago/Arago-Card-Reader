@@ -20,6 +20,9 @@ public:
 private slots:
 	void onNewConnection();
 	void onSocketDisconnected();
+	void onSocketError(QAbstractSocket::SocketError);
+	void onServerError(QWebSocketProtocol::CloseCode);
+	void onSslError(const QList<QSslError>&);
 	void onCardScanned(QByteArray, QByteArray, QByteArray);
 
 private:
