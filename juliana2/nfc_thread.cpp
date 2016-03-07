@@ -20,9 +20,13 @@ void NfcThread::run()
 	}
 
 	nfc_device *device;
-	// This cannot be done in a direct call, as the byte array is deallocated too soon then
-	QByteArray connByteArray = deviceName.toLatin1();
-	char *connStr = connByteArray.data();
+	char *connStr = NULL;
+	if(deviceName.length() > 0) {
+		// This cannot be done in a direct call, as the byte array is deallocated too soon then
+		QByteArray connByteArray = deviceName.toLatin1();
+		connStr = connByteArray.data();
+	}
+
 	device = nfc_open(context, connStr);
 	if(device == NULL) {
 		frontend_error(connStr == NULL ?
