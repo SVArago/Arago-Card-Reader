@@ -25,6 +25,7 @@ Frontend::Frontend() :
 	this->setWindowTitle("Juliana2");
 
 	connect(this, &Frontend::textChanged, this, &Frontend::updateText);
+	connect(this, &Frontend::abortMessage, this, &Frontend::performAbort);
 }
 
 void Frontend::updateText()
@@ -39,6 +40,22 @@ void Frontend::appendMessage(QString message)
 	textStream << message << endl;
 	streamMutex.unlock();
 	emit textChanged();
+}
+
+void Frontend::performAbort(QString message)
+{
+	QMessageBox messageBox(this);
+	messageBox.setWindowTitle("Juliana2");
+	messageBox.setText(message);
+	messageBox.setIcon(QMessageBox::Critical);
+	messageBox.exec();
+
+	this->close();
+}
+
+void Frontend::abortWithMessage(QString message)
+{
+	emit abortMessage(message);
 }
 
 int main(int argc, char *argv[])
@@ -59,7 +76,10 @@ void frontend_message(QString message)
 	frontend->appendMessage(message);
 }
 
-void frontend_error(QString message)
+void frontend_error(QString message, bool terminate)
 {
 	frontend->appendMessage(QStringLiteral("[ERROR] ") + message);
+
+	if(terminate)
+		frontend->abortWithMessage(message);
 }

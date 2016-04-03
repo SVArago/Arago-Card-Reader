@@ -14,12 +14,15 @@ class Frontend : public QWidget
 public:
 	Frontend();
 	void appendMessage(QString);
+	void abortWithMessage(QString);
 
 signals:
 	void textChanged();
+	void abortMessage(QString);
 
 private slots:
 	void updateText();
+	void performAbort(QString);
 
 private:
 	QTextEdit *textEdit;

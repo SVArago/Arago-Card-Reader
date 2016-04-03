@@ -36,7 +36,7 @@ void Juliana2::setup()
 	// Setup socket server
 	frontend_message(QStringLiteral("Starting websocket server on port %1...").arg(port));
 	if(!server->listen(QHostAddress::Any, port)) {
-		frontend_error(QStringLiteral("Failed to setup server: %1").arg(server->errorString()));
+		frontend_error(QStringLiteral("Failed to setup server: %1").arg(server->errorString()), true);
 		return;
 	}
 
@@ -60,28 +60,28 @@ bool Juliana2::setupSsl(QString certificatePath, QString keyPath)
 	QFile *certificateFile = new QFile(certificatePath);
 	certificateFile->open(QIODevice::ReadOnly);
 	if(!certificateFile->exists()) {
-		frontend_error("Certificate file doesn't exist");
+		frontend_error("Certificate file doesn't exist", false);
 		return false;
 	}
 
 	QSslCertificate cert(certificateFile);
 	certificateFile->close();
 	if(cert.isNull()) {
-		frontend_error("Invalid certificate specified");
+		frontend_error("Invalid certificate specified", false);
 		return false;
 	}
 
 	QFile *keyFile = new QFile(keyPath);
 	keyFile->open(QIODevice::ReadOnly);
 	if(!keyFile->exists()) {
-		frontend_error("Key file doesn't exist");
+		frontend_error("Key file doesn't exist", false);
 		return false;
 	}
 
 	QSslKey key(keyFile, QSsl::Rsa);
 	keyFile->close();
 	if(key.isNull()) {
-		frontend_error("Invalid key specified");
+		frontend_error("Invalid key specified", false);
 		return false;
 	}
 
@@ -126,19 +126,19 @@ void Juliana2::onSocketError(QAbstractSocket::SocketError error)
 	// See http://stackoverflow.com/a/16390227
 	const QMetaObject & metaObject = QAbstractSocket::staticMetaObject;
 	QMetaEnum metaEnum = metaObject.enumerator(metaObject.indexOfEnumerator("SocketError"));
-	frontend_error(QStringLiteral("Socket error: ") + metaEnum.valueToKey(error));
+	frontend_error(QStringLiteral("Socket error: ") + metaEnum.valueToKey(error), false);
 }
 
 void Juliana2::onServerError(QWebSocketProtocol::CloseCode closeCode)
 {
-	frontend_error(QStringLiteral("Server error: ") + QString(closeCode));
+	frontend_error(QStringLiteral("Server error: ") + QString(closeCode), false);
 }
 
 void Juliana2::onSslError(const QList<QSslError>& errors)
 {
 	foreach(QSslError error, errors)
 	{
-		frontend_error(QStringLiteral("SSL error: ") + error.errorString());
+		frontend_error(QStringLiteral("SSL error: ") + error.errorString(), false);
 	}
 }
 

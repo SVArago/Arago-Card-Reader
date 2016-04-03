@@ -23,9 +23,12 @@ void frontend_message(QString message)
 	outputMutex.unlock();
 }
 
-void frontend_error(QString message)
+void frontend_error(QString message, bool terminate)
 {
 	outputMutex.lock();
 	QTextStream(stderr) << "[ERROR] " << message << endl;
 	outputMutex.unlock();
+
+	if(terminate)
+		QCoreApplication::exit(1);
 }
