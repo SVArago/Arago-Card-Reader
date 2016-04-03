@@ -12,7 +12,7 @@ class NfcThread : public QThread
 
 public:
 	NfcThread(QString deviceName = NULL);
-	Q_DECL_OVERRIDE void run();
+	void run() Q_DECL_OVERRIDE;
 
 signals:
 	void cardScanned(QByteArray, QByteArray, QByteArray);

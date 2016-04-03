@@ -1,4 +1,6 @@
 Makefile
+Makefile.*
+bin/
 juliana2
 juliana2.ini
 moc_*
