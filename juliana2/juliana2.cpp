@@ -50,7 +50,7 @@ void Juliana2::setup()
 	connect(nfcThread, &NfcThread::finished, nfcThread, &QObject::deleteLater);
 	nfcThread->start();
 
-	frontend_message("Started Juliana2!");
+	frontend_message("Started Arago Card Reader!");
 }
 
 bool Juliana2::setupSsl(QString certificatePath, QString keyPath)

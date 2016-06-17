@@ -22,7 +22,7 @@ Frontend::Frontend() :
 
 	this->setLayout(layout);
 	this->resize(500, 300);
-	this->setWindowTitle("Juliana2");
+	this->setWindowTitle("Arago Card Reader");
 
 	connect(this, &Frontend::textChanged, this, &Frontend::updateText);
 	connect(this, &Frontend::abortMessage, this, &Frontend::performAbort);
@@ -45,7 +45,7 @@ void Frontend::appendMessage(QString message)
 void Frontend::performAbort(QString message)
 {
 	QMessageBox messageBox(this);
-	messageBox.setWindowTitle("Juliana2");
+	messageBox.setWindowTitle("Arago Card Reader");
 	messageBox.setText(message);
 	messageBox.setIcon(QMessageBox::Critical);
 	messageBox.exec();
