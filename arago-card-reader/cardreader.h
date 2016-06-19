@@ -1,5 +1,5 @@
-#ifndef JULIANA2_H_
-#define JULIANA2_H_
+#ifndef CARDREADER_H_
+#define CARDREADER_H_
 
 #include <QObject>
 #include <QByteArray>
@@ -9,12 +9,12 @@
 
 #include "nfc_thread.h"
 
-class Juliana2 : public QObject
+class CardReader : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit Juliana2();
+	explicit CardReader();
 	void setup();
 
 private slots:

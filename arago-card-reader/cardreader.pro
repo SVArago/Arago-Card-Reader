@@ -2,8 +2,8 @@ CONFIG += warn_on
 QT += websockets
 TARGET = arago-card-reader
 
-SOURCES += juliana2.cpp nfc_thread.cpp
-HEADERS += juliana2.h nfc_thread.h frontend.h
+SOURCES += cardreader.cpp nfc_thread.cpp
+HEADERS += cardreader.h nfc_thread.h frontend.h
 
 # GUI selection
 unix {
@@ -15,7 +15,7 @@ win32 {
 	QT += gui widgets
 	HEADERS += frontend_gui.h
 	SOURCES += frontend_gui.cpp
-	RC_FILE = juliana2.rc
+	RC_FILE = cardreader.rc
 }
 
 # Build system stuff

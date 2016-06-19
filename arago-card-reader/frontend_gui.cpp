@@ -2,7 +2,7 @@
 #include <QTextEdit>
 
 #include "frontend_gui.h"
-#include "juliana2.h"
+#include "cardreader.h"
 
 Frontend *frontend;
 
@@ -65,8 +65,8 @@ int main(int argc, char *argv[])
 	frontend = new Frontend();
 	frontend->show();
 
-	Juliana2 juliana;
-	juliana.setup();
+	CardReader acr;
+	acr.setup();
 
 	return app.exec();
 }

@@ -9,27 +9,27 @@
 #include <QSslCertificate>
 #include <QSslKey>
 
-#include "juliana2.h"
+#include "cardreader.h"
 #include "frontend.h"
 
-Juliana2::Juliana2() :
+CardReader::CardReader() :
 	server(),
 	clients(),
 	nfcThread()
 {
 }
 
-void Juliana2::setup()
+void CardReader::setup()
 {
 	// Load configuration
-	QString configurationFile = QCoreApplication::applicationDirPath() + QDir::separator() + "juliana2.ini";
+	QString configurationFile = QCoreApplication::applicationDirPath() + QDir::separator() + "arago-card-reader.ini";
 	QSettings settings(configurationFile, QSettings::IniFormat);
 	quint64 port = settings.value("websocket/port", 3000).toInt();
 	if(settings.value("websocket/tls", false).toBool() &&
 		this->setupSsl(settings.value("websocket/certificate", "").toString(), settings.value("websocket/key", "").toString())) {
 		frontend_message("Enabling TLS on server...");
 	} else {
-		server = new QWebSocketServer(QStringLiteral("Juliana"), QWebSocketServer::NonSecureMode, this);
+		server = new QWebSocketServer(QStringLiteral("Arago Card Reader"), QWebSocketServer::NonSecureMode, this);
 		frontend_message("Not enabling TLS on server...");
 	}
 
@@ -40,20 +40,20 @@ void Juliana2::setup()
 		return;
 	}
 
-	connect(server, &QWebSocketServer::newConnection, this, &Juliana2::onNewConnection);
-	connect(server, &QWebSocketServer::acceptError, this, &Juliana2::onSocketError);
-	connect(server, &QWebSocketServer::serverError, this, &Juliana2::onServerError);
-	connect(server, &QWebSocketServer::sslErrors, this, &Juliana2::onSslError);
+	connect(server, &QWebSocketServer::newConnection, this, &CardReader::onNewConnection);
+	connect(server, &QWebSocketServer::acceptError, this, &CardReader::onSocketError);
+	connect(server, &QWebSocketServer::serverError, this, &CardReader::onServerError);
+	connect(server, &QWebSocketServer::sslErrors, this, &CardReader::onSslError);
 
 	nfcThread = new NfcThread(settings.value("nfc/device", "").toString());
-	connect(nfcThread, &NfcThread::cardScanned, this, &Juliana2::onCardScanned);
+	connect(nfcThread, &NfcThread::cardScanned, this, &CardReader::onCardScanned);
 	connect(nfcThread, &NfcThread::finished, nfcThread, &QObject::deleteLater);
 	nfcThread->start();
 
 	frontend_message("Started Arago Card Reader!");
 }
 
-bool Juliana2::setupSsl(QString certificatePath, QString keyPath)
+bool CardReader::setupSsl(QString certificatePath, QString keyPath)
 {
 	// FIXME: This function leaks both QFile objects
 
@@ -89,23 +89,23 @@ bool Juliana2::setupSsl(QString certificatePath, QString keyPath)
 	sslConfiguration.setLocalCertificate(cert);
 	sslConfiguration.setPrivateKey(key);
 
-	server = new QWebSocketServer(QStringLiteral("Juliana"), QWebSocketServer::SecureMode, this);
+	server = new QWebSocketServer(QStringLiteral("Arago Card Reader"), QWebSocketServer::SecureMode, this);
 	server->setSslConfiguration(sslConfiguration);
 	return true;
 }
 
-void Juliana2::onNewConnection()
+void CardReader::onNewConnection()
 {
 	QWebSocket *webSocket = server->nextPendingConnection();
 
-	connect(webSocket, &QWebSocket::disconnected, this, &Juliana2::onSocketDisconnected);
-	connect(webSocket, static_cast<void(QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error), this, &Juliana2::onSocketError);
-	connect(webSocket, &QWebSocket::sslErrors, this, &Juliana2::onSslError);
+	connect(webSocket, &QWebSocket::disconnected, this, &CardReader::onSocketDisconnected);
+	connect(webSocket, static_cast<void(QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error), this, &CardReader::onSocketError);
+	connect(webSocket, &QWebSocket::sslErrors, this, &CardReader::onSslError);
 	clients.append(webSocket);
 	frontend_message(QStringLiteral("Client connected from %1:%2, now %3 connected client(s)").arg(webSocket->peerAddress().toString()).arg(webSocket->peerPort()).arg(clients.length()));
 }
 
-void Juliana2::onSocketDisconnected()
+void CardReader::onSocketDisconnected()
 {
 	QWebSocket *webSocket = qobject_cast<QWebSocket *>(sender());
 	if (webSocket) {
@@ -121,7 +121,7 @@ void Juliana2::onSocketDisconnected()
 	}
 }
 
-void Juliana2::onSocketError(QAbstractSocket::SocketError error)
+void CardReader::onSocketError(QAbstractSocket::SocketError error)
 {
 	// See http://stackoverflow.com/a/16390227
 	const QMetaObject & metaObject = QAbstractSocket::staticMetaObject;
@@ -129,12 +129,12 @@ void Juliana2::onSocketError(QAbstractSocket::SocketError error)
 	frontend_error(QStringLiteral("Socket error: ") + metaEnum.valueToKey(error), false);
 }
 
-void Juliana2::onServerError(QWebSocketProtocol::CloseCode closeCode)
+void CardReader::onServerError(QWebSocketProtocol::CloseCode closeCode)
 {
 	frontend_error(QStringLiteral("Server error: ") + QString(closeCode), false);
 }
 
-void Juliana2::onSslError(const QList<QSslError>& errors)
+void CardReader::onSslError(const QList<QSslError>& errors)
 {
 	foreach(QSslError error, errors)
 	{
@@ -142,7 +142,7 @@ void Juliana2::onSslError(const QList<QSslError>& errors)
 	}
 }
 
-void Juliana2::onCardScanned(QByteArray atqa, QByteArray sak, QByteArray uid)
+void CardReader::onCardScanned(QByteArray atqa, QByteArray sak, QByteArray uid)
 {
 	QString atqa_fmt = QString(atqa.toHex());
 	QString sak_fmt = QString(sak.toHex());

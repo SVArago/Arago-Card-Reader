@@ -2,7 +2,7 @@
 #include <QMutex>
 #include <QTextStream>
 
-#include "juliana2.h"
+#include "cardreader.h"
 
 QMutex outputMutex;
 
@@ -10,8 +10,8 @@ int main(int argc, char *argv[])
 {
 	QCoreApplication app(argc, argv);
 
-	Juliana2 juliana;
-	juliana.setup();
+	CardReader acr;
+	acr.setup();
 
 	return app.exec();
 }

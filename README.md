@@ -1,7 +1,7 @@
-# Juliana2
-Juliana2 is a daemon that polls a connected NFC-reader for tags, and broadcasts
-these over a WebSocket. It is inspired by a [similar project](https://github.com/Inter-Actief/JulianaNFC_C)
-by Inter-Actief.
+# Arago Card Reader
+Arago Card Reader is a daemon that polls a connected NFC-reader for tags, and
+broadcasts these over a WebSocket. It is inspired by a
+[similar project](https://github.com/Inter-Actief/JulianaNFC_C) by Inter-Actief.
 
 ## Key features
 * Runs on any platform supported by libnfc and Qt, notably Linux and Windows
@@ -9,8 +9,8 @@ by Inter-Actief.
 * Supports multiple parallel connections to the server
 
 ## Configuration
-Juliana2 reads a juliana2.ini configuration file from the same directory as the
-executable is placed in. It accepts the following settings:
+Arago Card Reader reads a arago-card-reader.ini configuration file from the same
+directory as the executable is placed in. It accepts the following settings:
 
 ### websocket section
 * port: The port to listen on
@@ -22,8 +22,8 @@ executable is placed in. It accepts the following settings:
 * device: libnfc connection string for the NFC reader to use
 
 ## Protocol format
-Juliana2 announces each scanned card in a JSON-encoded format on the websocket,
-with messages like these:
+Arago Card Reader announces each scanned card in a JSON-encoded format on the
+websocket, with messages like these:
 
     {"atqa":"1234", "uid":"567890ab", "sak":"cd"}
 
