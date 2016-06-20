@@ -37,10 +37,13 @@ win32 {
 		qt_dlls.files += $$[QT_INSTALL_LIBEXECS]/$$file
 	}
 
+	qt_platforms.path = $$DESTDIR/platforms
+	qt_platforms.files += $$[QT_INSTALL_PLUGINS]/platforms/qwindows.dll
+
 	nfc_dlls.path = $$DESTDIR
 	for(file, NFC_DLLS) {
 		nfc_dlls.files += $$NFCDIR/bin/$$file
 	}
 
-	INSTALLS += qt_dlls	nfc_dlls
+	INSTALLS += qt_dlls qt_platforms nfc_dlls
 }
