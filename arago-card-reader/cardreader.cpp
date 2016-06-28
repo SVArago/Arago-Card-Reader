@@ -25,7 +25,14 @@ void CardReader::setup()
 	QString configurationFile = QCoreApplication::applicationDirPath() + QDir::separator() + "arago-card-reader.ini";
 	QSettings settings(configurationFile, QSettings::IniFormat);
 	quint64 port = settings.value("websocket/port", 3000).toInt();
-	if(settings.value("websocket/tls", false).toBool() &&
+	bool wants_tls = settings.value("websocket/tls", false).toBool();
+
+	if(wants_tls && !QSslSocket::supportsSsl()) {
+		frontend_message("Requested TLS, but TLS not supported by Qt platform...");
+		wants_tls = false;
+	}
+
+	if(wants_tls &&
 		this->setupSsl(settings.value("websocket/certificate", "").toString(), settings.value("websocket/key", "").toString())) {
 		frontend_message("Enabling TLS on server...");
 	} else {
