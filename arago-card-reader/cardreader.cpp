@@ -93,6 +93,8 @@ bool CardReader::setupSsl(QString certificatePath, QString keyPath)
 	}
 
 	QSslConfiguration sslConfiguration = QSslConfiguration::defaultConfiguration();
+	sslConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);
+	sslConfiguration.setProtocol(QSsl::SecureProtocols);
 	sslConfiguration.setLocalCertificate(cert);
 	sslConfiguration.setPrivateKey(key);
 
