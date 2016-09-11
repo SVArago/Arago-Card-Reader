@@ -158,7 +158,7 @@ void CardReader::onCardScanned(QByteArray atqa, QByteArray sak, QByteArray uid)
 	QString uid_fmt = QString(uid.toHex());
 
 	frontend_message(QStringLiteral("Card scanned: ATQA 0x%1, SAK 0x%2, UID 0x%3").arg(atqa_fmt, sak_fmt, uid_fmt));
-	QString message = QStringLiteral("{\"atqa\": \"%1\", \"uid\": \"%2\", \"sak\": \"%3\"}").arg(atqa_fmt, sak_fmt, uid_fmt);
+	QString message = QStringLiteral("{\"atqa\": \"%1\", \"sak\": \"%2\", \"uid\": \"%3\"}").arg(atqa_fmt, sak_fmt, uid_fmt);
 
 	foreach(QWebSocket* socket, clients) {
 		socket->sendTextMessage(message);
