@@ -30,7 +30,7 @@ win32 {
 	INCLUDEPATH += $$NFCDIR/include
 
 	QT_DLLS = Qt5Core.dll Qt5Network.dll Qt5WebSockets.dll Qt5Widgets.dll Qt5Gui.dll libgcc*.dll libstd~1.dll libwinpthread*.dll
-	NFC_DLLS = libnfc.dll libusb0.dll pcre3.dll
+	NFC_DLLS = libnfc.dll libusb0.dll libusb-1.0.dll pcre3.dll
 
 	qt_dlls.path = $$DESTDIR
 	for(file, QT_DLLS) {
