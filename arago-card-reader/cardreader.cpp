@@ -89,10 +89,10 @@ bool CardReader::setupSsl(QString certificatePath, QString keyPath)
 		return false;
 	}
 
-	QSslCertificate cert(certificateFile);
+	QList<QSslCertificate> certificateChain = QSslCertificate::fromDevice(certificateFile);
 	certificateFile->close();
-	if(cert.isNull()) {
-		frontend_error("Invalid certificate specified", false);
+	if (certificateChain.size() == 0) {
+		frontend_error("Invalid certificate chain specified", false);
 		return false;
 	}
 
@@ -113,7 +113,7 @@ bool CardReader::setupSsl(QString certificatePath, QString keyPath)
 	QSslConfiguration sslConfiguration = QSslConfiguration::defaultConfiguration();
 	sslConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);
 	sslConfiguration.setProtocol(QSsl::SecureProtocols);
-	sslConfiguration.setLocalCertificate(cert);
+	sslConfiguration.setLocalCertificateChain(certificateChain);
 	sslConfiguration.setPrivateKey(key);
 
 	server = new QWebSocketServer(QStringLiteral("Arago Card Reader"), QWebSocketServer::SecureMode, this);
