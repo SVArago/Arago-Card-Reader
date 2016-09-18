@@ -26,6 +26,11 @@ Frontend::Frontend() :
 
 	connect(this, &Frontend::textChanged, this, &Frontend::updateText);
 	connect(this, &Frontend::abortMessage, this, &Frontend::performAbort);
+
+	QTimer::singleShot(0, [this]() {
+		acr = new CardReader();
+		acr->setup();
+	});
 }
 
 void Frontend::updateText()
@@ -64,9 +69,6 @@ int main(int argc, char *argv[])
 
 	frontend = new Frontend();
 	frontend->show();
-
-	CardReader acr;
-	acr.setup();
 
 	return app.exec();
 }
