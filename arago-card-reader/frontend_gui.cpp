@@ -24,13 +24,32 @@ Frontend::Frontend() :
 	this->resize(500, 300);
 	this->setWindowTitle("Arago Card Reader");
 
+	this->interceptClose = true;
+
 	connect(this, &Frontend::textChanged, this, &Frontend::updateText);
 	connect(this, &Frontend::abortMessage, this, &Frontend::performAbort);
 
-	QTimer::singleShot(0, [this]() {
-		acr = new CardReader();
-		acr->setup();
-	});
+	QThread *acrThread = new QThread(this);
+	acr = new CardReader();
+	acr->moveToThread(acrThread);
+
+	connect(acrThread, &QThread::started, acr, &CardReader::setup);
+	connect(this, &Frontend::exitInitiated, acr, &CardReader::teardown);
+	connect(acr, &CardReader::finished, this, &QWidget::close);
+	acrThread->start();
+}
+
+void Frontend::closeEvent(QCloseEvent *event) {
+	// Initiate our own shutdown process when the window is closed, but only the first time this event is fired and when
+	// it's spontaneous (i.e. initiated by the user).
+	if (this->interceptClose && event->spontaneous()) {
+		this->interceptClose = false;
+		event->ignore();
+		emit exitInitiated();
+	} else {
+		event->accept();
+	}
+
 }
 
 void Frontend::updateText()
@@ -55,6 +74,7 @@ void Frontend::performAbort(QString message)
 	messageBox.setIcon(QMessageBox::Critical);
 	messageBox.exec();
 
+	this->interceptClose = false;
 	this->close();
 }
 

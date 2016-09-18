@@ -8,6 +8,7 @@
 NfcThread::NfcThread(QString dev) :
 	deviceName(dev)
 {
+	shouldStop = false;
 }
 
 void NfcThread::run()
@@ -42,6 +43,9 @@ void NfcThread::run()
 
 	frontend_message(QStringLiteral("NFC device %1 opened!").arg(nfc_device_get_name(device)));
 
+	// Allow termination, as nfc_initiator_select_passive_target() might be blocking with some chips
+	QThread::setTerminationEnabled(true);
+
 	// Let's scan tags forever
 	const nfc_modulation nm = {
 		.nmt = NMT_ISO14443A,
@@ -60,5 +64,18 @@ void NfcThread::run()
 
 			this->msleep(SLEEP_INTERVAL);
 		}
+
+		if (shouldStop)
+			break;
 	}
+
+	// Teardown
+	frontend_message(QStringLiteral("Stopped scanning for NFC tags"));
+	nfc_close(device);
+	nfc_exit(context);
+	frontend_message(QStringLiteral("NFC reader released"));
+}
+
+void NfcThread::requestStop() {
+	shouldStop = true;
 }

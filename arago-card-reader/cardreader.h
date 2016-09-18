@@ -15,7 +15,14 @@ class CardReader : public QObject
 
 public:
 	explicit CardReader();
+
+public slots:
 	void setup();
+	void teardown();
+
+signals:
+	void started();
+	void finished();
 
 private slots:
 	void onNewConnection();

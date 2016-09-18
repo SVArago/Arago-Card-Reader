@@ -21,6 +21,10 @@ public:
 signals:
 	void textChanged();
 	void abortMessage(QString);
+	void exitInitiated();
+
+protected:
+	void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
 
 private slots:
 	void updateText();
@@ -33,6 +37,7 @@ private:
 	QTextStream textStream;
 
 	CardReader *acr;
+	bool interceptClose;
 };
 
 #endif
