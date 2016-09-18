@@ -58,6 +58,24 @@ void CardReader::setup()
 	nfcThread->start();
 
 	frontend_message("Started Arago Card Reader!");
+	emit started();
+}
+
+void CardReader::teardown()
+{
+	frontend_message("Closing Arago Card Reader...");
+
+	nfcThread->requestStop();
+	nfcThread->wait(1000);
+	if (nfcThread->isRunning()) {
+		frontend_message("NFC-thread did not exit voluntarily, terminating it...");
+		nfcThread->terminate();;
+	}
+
+	server->close();
+
+	frontend_message("Closed Arago Card Reader!");
+	emit finished();
 }
 
 bool CardReader::setupSsl(QString certificatePath, QString keyPath)

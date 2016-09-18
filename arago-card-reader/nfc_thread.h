@@ -13,12 +13,14 @@ class NfcThread : public QThread
 public:
 	NfcThread(QString deviceName = NULL);
 	void run() Q_DECL_OVERRIDE;
+	void requestStop();
 
 signals:
 	void cardScanned(QByteArray, QByteArray, QByteArray);
 
 private:
 	QString deviceName;
+	bool shouldStop;
 };
 
 #endif

@@ -7,6 +7,8 @@
 #include <QTextStream>
 #include <QString>
 
+#include "cardreader.h"
+
 class Frontend : public QWidget
 {
 	Q_OBJECT
@@ -19,6 +21,10 @@ public:
 signals:
 	void textChanged();
 	void abortMessage(QString);
+	void exitInitiated();
+
+protected:
+	void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
 
 private slots:
 	void updateText();
@@ -29,6 +35,9 @@ private:
 	QMutex streamMutex;
 	QString text;
 	QTextStream textStream;
+
+	CardReader *acr;
+	bool interceptClose;
 };
 
 #endif
