@@ -63,10 +63,10 @@ void CardReader::setup()
 
 void CardReader::teardown()
 {
-	frontend_message("Closing Arago Card Reader...");
+	frontend_message("Closing Arago Card Reader, this might take up to 10 seconds...");
 
 	nfcThread->requestStop();
-	nfcThread->wait(1000);
+	nfcThread->wait(10000);
 	if (nfcThread->isRunning()) {
 		frontend_message("NFC-thread did not exit voluntarily, terminating it...");
 		frontend_message("If application doesn't continue after this, please hit the close button again.");
