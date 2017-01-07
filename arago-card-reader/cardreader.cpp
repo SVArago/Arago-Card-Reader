@@ -57,7 +57,7 @@ void CardReader::setup()
 	connect(nfcThread, &NfcThread::finished, nfcThread, &QObject::deleteLater);
 	nfcThread->start();
 
-	frontend_message("Started Arago Card Reader!");
+	frontend_message("Started all processes...");
 	emit started();
 }
 
@@ -69,7 +69,8 @@ void CardReader::teardown()
 	nfcThread->wait(1000);
 	if (nfcThread->isRunning()) {
 		frontend_message("NFC-thread did not exit voluntarily, terminating it...");
-		nfcThread->terminate();;
+		frontend_message("If application doesn't continue after this, please hit the close button again.");
+		nfcThread->terminate();
 	}
 
 	server->close();

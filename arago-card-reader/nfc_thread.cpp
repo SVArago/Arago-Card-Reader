@@ -28,6 +28,7 @@ void NfcThread::run()
 		connStr = connByteArray.data();
 	}
 
+	frontend_message(QStringLiteral("Opening NFC device, this might take up to 30 seconds, please be patient..."));
 	device = nfc_open(context, connStr);
 	if(device == NULL) {
 		frontend_error(connStr == NULL ?
@@ -42,6 +43,8 @@ void NfcThread::run()
 	}
 
 	frontend_message(QStringLiteral("NFC device %1 opened!").arg(nfc_device_get_name(device)));
+	frontend_message(QStringLiteral("Please **IGNORE** libnfc errors listed below, they're not serious."));
+	frontend_message(QStringLiteral("Started Arago Card Reader, you can start handling transactions!"));
 
 	// Allow termination, as nfc_initiator_select_passive_target() might be blocking with some chips
 	QThread::setTerminationEnabled(true);
@@ -54,15 +57,17 @@ void NfcThread::run()
 	nfc_target target;
 	while (true) {
 		int ret = nfc_initiator_select_passive_target(device, nm, NULL, 0, &target);
-		if (ret < 0) {
-			frontend_error(QStringLiteral("libnfc error: %1").arg(nfc_strerror(device)), false);
-		} else if (ret > 0) {
+		if (ret > 0) {
 			nfc_iso14443a_info info = target.nti.nai;
 			emit cardScanned(QByteArray((const char*)info.abtAtqa, 2), QByteArray((const char*)&info.btSak, 1), QByteArray((const char*)info.abtUid, info.szUidLen));
 
 			nfc_initiator_deselect_target(device);
 
 			this->msleep(SLEEP_INTERVAL);
+		} else if (ret == NFC_EIO) {
+			frontend_message(QStringLiteral("libnfc returned I/O failure, supposedly device timeout, carrying on.").arg(nfc_strerror(device)));
+		} else {
+			frontend_error(QStringLiteral("libnfc returned failure: %1").arg(nfc_strerror(device)), false);
 		}
 
 		if (shouldStop)
@@ -70,10 +75,10 @@ void NfcThread::run()
 	}
 
 	// Teardown
-	frontend_message(QStringLiteral("Stopped scanning for NFC tags"));
+	frontend_message(QStringLiteral("Stopped scanning for NFC tags."));
 	nfc_close(device);
 	nfc_exit(context);
-	frontend_message(QStringLiteral("NFC reader released"));
+	frontend_message(QStringLiteral("NFC reader released."));
 }
 
 void NfcThread::requestStop() {
