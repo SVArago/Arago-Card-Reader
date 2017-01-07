@@ -61,7 +61,7 @@ void Frontend::updateText()
 void Frontend::appendMessage(QString message)
 {
 	streamMutex.lock();
-	textStream << message << endl;
+	textStream << QDateTime::currentDateTime().toString("[HH:mm:ss.zzz] ") << message << endl;
 	streamMutex.unlock();
 	emit textChanged();
 }
